@@ -21,3 +21,5 @@
 #include "dcimage.h"
 
 int getSize()
+{
+}

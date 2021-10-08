@@ -2,14 +2,11 @@ CC=gcc -Wall -g
 CLIB = -lpthread -lrt
 MW = `pkg-config --cflags --libs MagickWand`
 
-all: stego 
+all: dcstego 
 # all: stego dcstego dcutils dcimage 
 
-stego: stego.o 
-	$(CC) -o stego stego.o 
-
-# dcstego: dcstego.o
-# 	$(CC) -o dcstego dcstego.o 
+dcstego: dcstego.o
+	$(CC) -o dcstego dcstego.o 
 
 # dcutils: dcutils.o
 # 	$(CC) -o dcutils dcutils.o 
@@ -18,13 +15,10 @@ stego: stego.o
 # 	$(CC) -o  dcimage dcimage.o $(MW)
 
 clean:
-	rm -f *.o  stego 
-	# rm -f *.o  stego dcstego dcutils dcimage
-	
-stego.o:
-	$(CC) -c stego.c
+	rm -f *.o  dcstego 
+	# rm -f *.o  dcstego dcutils dcimage
 
-# dcstego.o:
+dcstego.o:
 # 	$(CC) -c dcstego.c
 
 # dcutils.o:
