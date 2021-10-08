@@ -5,7 +5,7 @@
 #include <openssl/rsa.h>
 
 // #include "dcutils.h"
-// #include "dcimage.h"
+#include "dcimage.h"
 
 void usage();
 void errMsg(char *msg);

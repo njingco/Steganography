@@ -1,5 +1,3 @@
 #include <stdio.h>
 #include <stdlib.h>
-// #include <MagickWand/MagickWand.h>
-
-int getSize();
+#include <MagickWand/MagickWand.h>
