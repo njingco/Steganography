@@ -77,6 +77,25 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       startStego
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      char *coverImage - file path of cover image
+ *                 char *secretImage - file path of secret image
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * This function runs the stego process
+ * -----------------------------------------------------------------------*/
 void startStego(char *coverImage, char *secretImage)
 {
     // char key[KEY_LEN];
@@ -117,7 +136,7 @@ void startStego(char *coverImage, char *secretImage)
         breakWands(cover, secret);
         exit(1);
     }
-    // Stego images--------------------------------------
+    // Stego images----------------------------------------------
 
     // Save Image
     if (!saveImg(cover))
@@ -132,6 +151,24 @@ void startStego(char *coverImage, char *secretImage)
     exit(0);
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       startUnstego
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      char *coverImage - file path of cover image
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * This function runs the unstego process
+ * -----------------------------------------------------------------------*/
 void startUnstego(char *coverImage)
 {
     // check image type
@@ -152,7 +189,7 @@ void startUnstego(char *coverImage)
         exit(1);
     }
 
-    // untego image--------------------------------------
+    // untego image----------------------------------------------
 
     // decrypt secret image--------------------------------------
 
@@ -169,6 +206,24 @@ void startUnstego(char *coverImage)
     exit(0);
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       setKey
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      char *key - pointer to key for encryption
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * This function gets the password key for the encyption process
+ * -----------------------------------------------------------------------*/
 void setKey(char *key)
 {
     struct termios term;
@@ -204,6 +259,25 @@ void setKey(char *key)
         tcsetattr(fileno(stdin), 0, &term);
     }
 }
+
+/*--------------------------------------------------------------------------
+ * FUNCTION:       usage
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      NA
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * Prints the Usage of the program
+ * -----------------------------------------------------------------------*/
 void usage()
 {
     fprintf(stdout, "Stego Image:\n");
@@ -213,11 +287,47 @@ void usage()
     fprintf(stdout, "-t unstego -cm [cover image path] \n\n");
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       errMsg
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      char *msg - error message string
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * Prints the error message
+ * -----------------------------------------------------------------------*/
 void errMsg(char *msg)
 {
     fprintf(stderr, "%s\n", msg);
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       breakWands
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      MagickWand *cover, MagickWand *secret - wands of images
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * Closes the MagickWands
+ * -----------------------------------------------------------------------*/
 void breakWands(MagickWand *cover, MagickWand *secret)
 {
     cover = DestroyMagickWand(cover);

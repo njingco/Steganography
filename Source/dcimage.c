@@ -20,6 +20,26 @@
 
 #include "dcimage.h"
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       isSupported
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      MagickWand *wand - wand of an image
+ *
+ * RETURNS:        bool -   true: supported, 
+ *                          false: not supported
+ *
+ * NOTES:
+ * returns true if image is supported, and false if image type is 
+ * not supported
+ * -----------------------------------------------------------------------*/
 bool isSupported(MagickWand *wand)
 {
     char *type = MagickGetImageFormat(wand);
@@ -34,6 +54,27 @@ bool isSupported(MagickWand *wand)
     return false;
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       isCoverSizeLarger
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      MagickWand *cover - wand of an cover image
+ *                 MagickWand *secret - wand of an secret image
+ *
+ * RETURNS:        bool -   true: cover image is large enough, 
+ *                          false: cover image is too small
+ *
+ * NOTES:
+ * Returns true if cover letter is large enough to contain the secret
+ * image
+ * -----------------------------------------------------------------------*/
 bool isCoverSizeLarger(MagickWand *cover, MagickWand *secret)
 {
     MagickSizeType coverLen = 0;
@@ -57,6 +98,25 @@ bool isCoverSizeLarger(MagickWand *cover, MagickWand *secret)
     return false;
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       saveImg
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      MagickWand *wand - wand of an image
+ *
+ * RETURNS:        bool -   true: saved, 
+ *                          false: failed
+ *
+ * NOTES:
+ * returns true if image is successfuly saved
+ * -----------------------------------------------------------------------*/
 bool saveImg(MagickWand *wand)
 {
     MagickBooleanType status;
@@ -75,6 +135,24 @@ bool saveImg(MagickWand *wand)
     return true;
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       
+ *
+ * DATE:           October  08, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      
+ *
+ * RETURNS:        
+ *
+ * NOTES:
+ * 
+ * -----------------------------------------------------------------------*/
 void stego(MagickWand *cover, MagickWand *secret)
 {
 }
