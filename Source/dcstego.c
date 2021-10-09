@@ -23,10 +23,10 @@
  * 
  * Usage:
  * Stego
- *  ./dcstego -t stego -cm /img/MARBLES.BMP -sm /img/BLU.BMP 
+ *  ./dcstego -t stego -cm ./img/MARBLES.BMP -sm ./img/BLU.BMP 
  * 
  * Unstego
- *  ./dcstego -t unstego -cm /img/MARBLES.BMP 
+ *  ./dcstego -t unstego -cm ./img/MARBLES.BMP 
  * ---------------------------------------------------------------------------------------*/
 #include "dcstego.h"
 
@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
 {
     char coverImage[80];
     char secretImage[80];
-    char key[80];
     int count;
     int stego;
 
@@ -68,36 +67,62 @@ int main(int argc, char *argv[])
     /* Check if task is to stego and run process*/
     if (stego)
     {
-        startStego(coverImage, secretImage, key);
+        startStego(coverImage, secretImage);
     }
     else
     {
-        startUnstego(coverImage, key);
+        startUnstego(coverImage);
     }
 
     return 0;
 }
 
-void startStego(char *coverImage, char *secretImage, char *key)
+void startStego(char *coverImage, char *secretImage)
 {
-    MagickWandGenesis();
-    MagickWand *wand = NewMagickWand();
-
+    // char *key;
     // Get password from user
-    setKey(key);
+    // setKey(key);
 
     // check image type
+    MagickWandGenesis();
+    MagickWand *cover = NewMagickWand();
+    MagickWand *secret = NewMagickWand();
+    // Check Cover Image
+    if (MagickReadImage(cover, coverImage) == MagickFalse)
+    {
+        errMsg("Cover Image Error");
+        exit(1);
+    }
+    // Check Secret Image
+    if (MagickReadImage(secret, secretImage) == MagickFalse)
+    {
+        errMsg("Secret Image Error");
+        exit(1);
+    }
+
+    fprintf(stdout, "Cover Image: %s\n", coverImage);
+    fprintf(stdout, "Secret Image: %s\n", secretImage);
+
+    // Check if images file type are supported
+    if (!isSupported(cover) || !isSupported(secret))
+    {
+        exit(1);
+    }
 
     // encrypt secret image
 
     // check encrypter image file size
-
+    if (!isCoverSizeLarger(cover, secret))
+    {
+        exit(1);
+    }
     // Stego images
 
     // Save Image
+    exit(0);
 }
 
-void startUnstego(char *coverImage, char *key)
+void startUnstego(char *coverImage)
 {
     // check image type
 
@@ -108,6 +133,8 @@ void startUnstego(char *coverImage, char *key)
     // Get new file name
 
     // Save Image
+
+    exit(0);
 }
 
 void setKey(char *key)

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-// #include <MagickWand/MagickWand.h>
+#include <MagickWand/MagickWand.h>
 
 int main(int argc, char **argv)
 {
@@ -35,6 +35,7 @@ int main(int argc, char **argv)
     MagickWandGenesis();
     magick_wand = NewMagickWand();
     status = MagickReadImage(magick_wand, argv[1]);
+    fprintf(stdout, "IMG: %s\n", argv[1]);
     if (status == MagickFalse)
         ThrowWandException(magick_wand);
     /*

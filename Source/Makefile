@@ -4,8 +4,8 @@ MW = `pkg-config --cflags --libs MagickWand`
 
 all: dcstego  
 
-dcstego: dcstego.o
-	$(CC) -o dcstego dcstego.o $(MW)
+dcstego: dcstego.o dcimage.o dcutils.o
+	$(CC) -o dcstego dcstego.o dcimage.o dcutils.o $(MW)
 
 dcutils: dcutils.o
 	$(CC) -o dcutils dcutils.o 
