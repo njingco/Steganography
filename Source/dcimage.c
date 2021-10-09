@@ -19,3 +19,12 @@
  * ---------------------------------------------------------------------------------------*/
 
 #include "dcimage.h"
+
+double getImgSize(MagickWand *wand, const *filename)
+{
+    /* Read the input image */
+    MagickReadImage(wand, filename);
+
+    fprintf(stdout, "");
+    return 0;
+}

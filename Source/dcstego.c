@@ -80,7 +80,12 @@ int main(int argc, char *argv[])
 
 void startStego(char *coverImage, char *secretImage, char *key)
 {
+    MagickWandGenesis();
+    MagickWand *wand = NewMagickWand();
+
+    // Get password from user
     setKey(key);
+
     // check image type
 
     // encrypt secret image
