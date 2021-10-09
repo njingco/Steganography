@@ -7,7 +7,6 @@
 #include "dcimage.h"
 
 #define KEY_LEN 80
-#define FILE_LEN 80
 
 void usage();
 void errMsg(char *msg);

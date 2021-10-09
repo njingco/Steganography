@@ -109,7 +109,7 @@ void startStego(char *coverImage, char *secretImage)
         exit(1);
     }
 
-    // encrypt secret image
+    // encrypt secret image--------------------------------------
 
     // check encrypter image file size
     if (!isCoverSizeLarger(cover, secret))
@@ -117,14 +117,10 @@ void startStego(char *coverImage, char *secretImage)
         breakWands(cover, secret);
         exit(1);
     }
-    // Stego images
+    // Stego images--------------------------------------
 
     // Save Image
-    char newImgName[FILE_LEN];
-    fprintf(stdout, "Enter New Image Name:");
-    scanf("%s", newImgName);
-
-    if (!saveImg(cover, newImgName))
+    if (!saveImg(cover))
     {
         breakWands(cover, secret);
         exit(1);
@@ -142,18 +138,26 @@ void startUnstego(char *coverImage)
     MagickWandGenesis();
     MagickWand *cover = NewMagickWand();
 
-    // untego image
+    // Check Cover Image
+    if (MagickReadImage(cover, coverImage) == MagickFalse)
+    {
+        errMsg("Cover Image Error");
+        breakWands(cover, NULL);
+        exit(1);
+    }
 
-    // decrypt secret image
+    if (!isSupported(cover))
+    {
+        breakWands(cover, NULL);
+        exit(1);
+    }
 
-    // Get new file name
+    // untego image--------------------------------------
+
+    // decrypt secret image--------------------------------------
 
     // Save Image
-    char newImgName[FILE_LEN];
-    fprintf(stdout, "Enter New Image Name:");
-    scanf("%s", newImgName);
-
-    if (!saveImg(cover, newImgName))
+    if (!saveImg(cover))
     {
         breakWands(cover, NULL);
         exit(1);

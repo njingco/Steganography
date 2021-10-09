@@ -57,10 +57,15 @@ bool isCoverSizeLarger(MagickWand *cover, MagickWand *secret)
     return false;
 }
 
-bool saveImg(MagickWand *wand, char *filename)
+bool saveImg(MagickWand *wand)
 {
     MagickBooleanType status;
-    status = MagickWriteImages(wand, filename, MagickTrue);
+
+    char newImgName[FILE_LEN];
+    fprintf(stdout, "Enter New Image Name:");
+    scanf("%s", newImgName);
+
+    status = MagickWriteImages(wand, newImgName, MagickTrue);
     if (status == MagickFalse)
     {
         fprintf(stderr, "Error with Saving Image\n");
