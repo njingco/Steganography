@@ -27,10 +27,10 @@ bool isSupported(MagickWand *wand)
 
     if (strcmp(BMP, type) == 0)
     {
-        fprintf(stdout, "Image %s Type: %s is Supported\n", name, type);
+        fprintf(stdout, "Image: %s \nType: %s is Supported\n\n", name, type);
         return true;
     }
-    fprintf(stdout, "Image %s Type: %s is NOT Supported\n", name, type);
+    fprintf(stdout, "Image: %s  \nType: %s is NOT Supported\n\n", name, type);
     return false;
 }
 
@@ -45,15 +45,15 @@ bool isCoverSizeLarger(MagickWand *cover, MagickWand *secret)
     // Secret image size
     MagickGetImageLength(secret, &secretLen);
 
-    fprintf(stdout, "CL: %lld \nSL: %lld \n", coverLen, secretLen);
+    fprintf(stdout, "\nCL: %lld \nSL: %lld \n\n", coverLen, secretLen);
 
     if (coverLen >= (secretLen * 8))
     {
-        fprintf(stdout, "Cover Image Large Enough\n");
+        fprintf(stdout, "Cover Image Large Enough\n\n");
 
         return true;
     }
-    fprintf(stdout, "Cover Image NOT Large Enough\n");
+    fprintf(stdout, "Cover Image NOT Large Enough\n\n");
     return false;
 }
 
@@ -68,4 +68,8 @@ bool saveImg(MagickWand *wand, char *filename)
     }
     fprintf(stdout, "Saved Image\n");
     return true;
+}
+
+void stego(MagickWand *cover, MagickWand *secret)
+{
 }

@@ -6,7 +6,7 @@
 
 #define BMP "BMP3"
 
-// double getImgSize(MagickWand *, const *);
 bool isSupported(MagickWand *wand);
 bool saveImg(MagickWand *wand, char *filename);
 bool isCoverSizeLarger(MagickWand *cover, MagickWand *secret);
+void stego(MagickWand *cover, MagickWand *secret);

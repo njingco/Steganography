@@ -14,7 +14,7 @@ dcimage: dcimage.o
 	$(CC) -o dcimage dcimage.o $(MW)
 
 clean:
-	rm -f *.o  dcstego dcutils dcimage
+	rm -f *.o  dcstego dcutils dcimage test
 
 dcstego.o:
 	$(CC) -c dcstego.c $(MW)

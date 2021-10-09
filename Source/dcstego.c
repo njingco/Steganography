@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
 void startStego(char *coverImage, char *secretImage)
 {
-    // char *key;
+    // char key[KEY_LEN];
     // Get password from user
     // setKey(key);
 
@@ -91,21 +91,21 @@ void startStego(char *coverImage, char *secretImage)
     if (MagickReadImage(cover, coverImage) == MagickFalse)
     {
         errMsg("Cover Image Error");
+        breakWands(cover, secret);
         exit(1);
     }
     // Check Secret Image
     if (MagickReadImage(secret, secretImage) == MagickFalse)
     {
         errMsg("Secret Image Error");
+        breakWands(cover, secret);
         exit(1);
     }
-
-    fprintf(stdout, "Cover Image: %s\n", coverImage);
-    fprintf(stdout, "Secret Image: %s\n", secretImage);
 
     // Check if images file type are supported
     if (!isSupported(cover) || !isSupported(secret))
     {
+        breakWands(cover, secret);
         exit(1);
     }
 
@@ -114,17 +114,33 @@ void startStego(char *coverImage, char *secretImage)
     // check encrypter image file size
     if (!isCoverSizeLarger(cover, secret))
     {
+        breakWands(cover, secret);
         exit(1);
     }
     // Stego images
 
     // Save Image
+    char newImgName[FILE_LEN];
+    fprintf(stdout, "Enter New Image Name:");
+    scanf("%s", newImgName);
+
+    if (!saveImg(cover, newImgName))
+    {
+        breakWands(cover, secret);
+        exit(1);
+    }
+
+    // Close Wands
+    breakWands(cover, secret);
+
     exit(0);
 }
 
 void startUnstego(char *coverImage)
 {
     // check image type
+    MagickWandGenesis();
+    MagickWand *cover = NewMagickWand();
 
     // untego image
 
@@ -133,6 +149,18 @@ void startUnstego(char *coverImage)
     // Get new file name
 
     // Save Image
+    char newImgName[FILE_LEN];
+    fprintf(stdout, "Enter New Image Name:");
+    scanf("%s", newImgName);
+
+    if (!saveImg(cover, newImgName))
+    {
+        breakWands(cover, NULL);
+        exit(1);
+    }
+
+    // Close Wands
+    breakWands(cover, NULL);
 
     exit(0);
 }
@@ -184,4 +212,11 @@ void usage()
 void errMsg(char *msg)
 {
     fprintf(stderr, "%s\n", msg);
+}
+
+void breakWands(MagickWand *cover, MagickWand *secret)
+{
+    cover = DestroyMagickWand(cover);
+    secret = DestroyMagickWand(secret);
+    MagickWandTerminus();
 }
