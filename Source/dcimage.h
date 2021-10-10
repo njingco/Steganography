@@ -27,7 +27,8 @@ bool is_supported(MagickWand *wand);
 bool save_img(MagickWand *wand);
 bool is_cover_larger(MagickWand *cover, MagickWand *secret);
 int get_img_size(MagickWand *wand);
-void stego(MagickWand *cover, MagickWand *secret);
+bool stego(MagickWand *cover, MagickWand *secret);
+char *unstego(MagickWand *cover);
 
 char *img_to_stream(MagickWand *wand);
 char *stuff_secret(MagickWand *cover, MagickWand *secret);
@@ -37,3 +38,5 @@ int write_file(FILE *file, char *buffer, int size);
 
 void parse_colour_string(long *clr, char *colorStr);
 void parse_color_int(long *clr, char *colorStr);
+
+bool is_even(int num);

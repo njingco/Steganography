@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     char coverImage[80];
     char secretImage[80];
     int count;
-    int stego;
+    int stego = 0;
 
     /* Tell them how to use this thing */
     if ((argc < 4) || (argc > 7))
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     {
         if (strcmp(argv[count], "-t") == 0)
         {
-            if (strcmp(argv[count + 1], "stego"))
+            if (strcmp(argv[count + 1], "stego") == 0)
             {
                 stego = 1;
             }
@@ -67,10 +67,12 @@ int main(int argc, char *argv[])
     /* Check if task is to stego and run process*/
     if (stego)
     {
+        fprintf(stdout, "Staring Stego Process\n\n");
         start_stego(coverImage, secretImage);
     }
     else
     {
+        fprintf(stdout, "Staring Unstego Process\n\n");
         start_unstego(coverImage);
     }
 
@@ -106,6 +108,7 @@ void start_stego(char *coverImage, char *secretImage)
     MagickWandGenesis();
     MagickWand *cover = NewMagickWand();
     MagickWand *secret = NewMagickWand();
+
     // Check Cover Image
     if (MagickReadImage(cover, coverImage) == MagickFalse)
     {
@@ -122,11 +125,11 @@ void start_stego(char *coverImage, char *secretImage)
     }
 
     // Check if images file type are supported
-    if (!is_supported(cover) || !is_supported(secret))
-    {
-        break_wands(cover, secret);
-        exit(1);
-    }
+    // if (!is_supported(cover) || !is_supported(secret))
+    // {
+    //     break_wands(cover, secret);
+    //     exit(1);
+    // }
 
     // encrypt secret image--------------------------------------
 
@@ -136,15 +139,21 @@ void start_stego(char *coverImage, char *secretImage)
         break_wands(cover, secret);
         exit(1);
     }
+
     // Stego images----------------------------------------------
-    stego(cover, secret);
+    if (!stego(cover, secret))
+    {
+        err_msg("Something went wrong with the stego process\n");
+        break_wands(cover, secret);
+        exit(1);
+    }
 
     // Save Image
-    // if (!save_img(cover))
-    // {
-    //     break_wands(cover, secret);
-    //     exit(1);
-    // }
+    if (!save_img(cover))
+    {
+        break_wands(cover, secret);
+        exit(1);
+    }
 
     // Close Wands
     break_wands(cover, secret);
@@ -180,29 +189,50 @@ void start_unstego(char *coverImage)
     if (MagickReadImage(cover, coverImage) == MagickFalse)
     {
         err_msg("Cover Image Error");
-        break_wands(cover, NULL);
+        break_wand(cover);
         exit(1);
     }
 
-    if (!is_supported(cover))
-    {
-        break_wands(cover, NULL);
-        exit(1);
-    }
+    // if (!is_supported(cover))
+    // {
+    //     break_wands(cover, NULL);
+    //     exit(1);
+    // }
 
     // untego image----------------------------------------------
+    char *secret = (char *)malloc(get_img_size(cover));
+    secret = unstego(cover);
+
+    FILE *fp = open_file("secret");
+    if (write_file(fp, secret, get_img_size(cover)) == -1)
+    {
+        err_msg("Can't write File");
+        break_wand(cover);
+        exit(1);
+    }
+    fprintf(stdout, "Done Writing\n\n");
 
     // decrypt secret image--------------------------------------
 
-    // Save Image
-    if (!save_img(cover))
-    {
-        break_wands(cover, NULL);
-        exit(1);
-    }
+    // Check Cover Image
+    // MagickWand *secretWand = NewMagickWand();
+
+    // if (MagickReadImageFile(secretWand, fp) == MagickFalse)
+    // {
+    //     err_msg("Making Secret Wand Error");
+    //     break_wands(cover, secretWand);
+    //     exit(1);
+    // }
+
+    // // Save Image
+    // if (!save_img(secretWand))
+    // {
+    //     break_wands(cover, secretWand);
+    //     exit(1);
+    // }
 
     // Close Wands
-    break_wands(cover, NULL);
+    break_wand(cover);
 
     exit(0);
 }
@@ -333,5 +363,11 @@ void break_wands(MagickWand *cover, MagickWand *secret)
 {
     cover = DestroyMagickWand(cover);
     secret = DestroyMagickWand(secret);
+    MagickWandTerminus();
+}
+
+void break_wand(MagickWand *cover)
+{
+    cover = DestroyMagickWand(cover);
     MagickWandTerminus();
 }

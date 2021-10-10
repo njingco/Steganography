@@ -14,3 +14,4 @@ void set_key(char *key);
 void start_stego(char *coverImage, char *secretImage);
 void start_unstego(char *coverImage);
 void break_wands(MagickWand *cover, MagickWand *secret);
+void break_wand(MagickWand *cover);
