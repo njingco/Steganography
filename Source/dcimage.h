@@ -30,9 +30,8 @@ bool stego(MagickWand *cover, MagickWand *secret);
 bool unstego(MagickWand *cover);
 
 char *img_to_stream(MagickWand *wand);
-char *stuff_secret(MagickWand *cover, MagickWand *secret);
 
-FILE *open_file(char *filename);
+FILE *open_file();
 int write_file(FILE *file, char *buffer, int size);
 
 void parse_colour_string(long *clr, char *colorStr);

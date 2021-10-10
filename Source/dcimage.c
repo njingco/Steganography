@@ -16,6 +16,9 @@
  * 
  * Notes:
  * this module will contain all of the functions for the image processing and  manipulation.
+ * 
+ * TODO:
+ * - fix unstego image size
  * ---------------------------------------------------------------------------------------*/
 
 #include "dcimage.h"
@@ -159,33 +162,6 @@ bool save_img(MagickWand *wand)
     return true;
 }
 
-char *stuff_secret(MagickWand *cover, MagickWand *secret)
-{
-    // create streams of the wands
-    char *coverStream = img_to_stream(cover);
-    char *secretStream = img_to_stream(secret);
-    // int coverLen = get_img_size(cover);
-    // int secretLen = get_img_size(secret);
-
-    // int c = 0;
-    for (int s = 0; s < 1; s++)
-    {
-        fprintf(stdout, "\nsbin: %d ", secretStream[s]);
-
-        // // // loop through each secret char binary
-        // for (int i = 0; i < 8; i++)
-        // {
-        //     fprintf(stdout, "a%d", sbin[i]);
-        //     //     byte cbin[8] = coverStream[c].getByte(); // to binary of each cover char
-        //     //     cbin[7] = sbin[i];                       // change last cover bit to secrets bit
-
-        //     //     c++;
-        // }
-    }
-
-    return coverStream;
-}
-
 /*--------------------------------------------------------------------------
  * FUNCTION:       stego
  *
@@ -197,12 +173,15 @@ char *stuff_secret(MagickWand *cover, MagickWand *secret)
  *
  * PROGRAMMER:     Nicole Jingco
  *
- * INTERFACE:      
+ * INTERFACE:      MagickWand *coverWand
+ *                 MagickWand *secretWand
  *
- * RETURNS:        
+ * RETURNS:        true if successfull in stegoing image,
+ *                 false if unsuccessful in steoing image
  *
  * NOTES:
- * 
+ * This function handles the steganography process by filling the last 
+ * bit of each carrier byte and saves the image
  * -----------------------------------------------------------------------*/
 bool stego(MagickWand *coverWand, MagickWand *secretWand)
 {
@@ -274,6 +253,7 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
                     // Check if at the end of the stream
                     if ((streamIndex++) >= get_img_size(secretWand))
                     {
+                        fprintf(stdout, "SW: %d\n", get_img_size(secretWand));
                         PixelSyncIterator(cover);
                         save_img(coverWand);
                         return true;
@@ -289,9 +269,9 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
 }
 
 /*--------------------------------------------------------------------------
- * FUNCTION:       
+ * FUNCTION:       unstego
  *
- * DATE:           October  08, 2021
+ * DATE:           October  09, 2021
  *
  * REVISIONS:      NA
  * 
@@ -299,12 +279,14 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
  *
  * PROGRAMMER:     Nicole Jingco
  *
- * INTERFACE:      
+ * INTERFACE:      MagickWand *coverWand
  *
- * RETURNS:        
+ * RETURNS:        true if successfull in unstegoing image,
+ *                 false if unsuccessful in unsteoing image
  *
  * NOTES:
- * 
+ * This function handles the steganography process by extracting the 
+ * last bit in each cover image byte and writing it to the image file
  * -----------------------------------------------------------------------*/
 bool unstego(MagickWand *coverWand)
 {
@@ -317,10 +299,10 @@ bool unstego(MagickWand *coverWand)
 
     int binIndex = 7;
     int even = 0;
-
     unsigned char tempChar = 0;
+    int charCount = 0;
 
-    FILE *fp = open_file("secret");
+    FILE *fp = open_file();
 
     if ((cover == (PixelIterator *)NULL))
     {
@@ -356,11 +338,23 @@ bool unstego(MagickWand *coverWand)
                 if (binIndex < 0)
                 {
                     binIndex = 7;
+                    charCount++;
+
+                    // if (charCount >= 86454)
+                    // if (charCount <= 200)
+                    // {
+                    //     fprintf(stdout, "%d ", tempChar);
+
+                    //     // fclose(fp);
+                    //     // return true;
+                    // }
+
                     // Write to to file
                     if (fputc(tempChar, fp) == -1)
                     {
                         return false;
                     }
+
                     tempChar = 0;
                 }
             }
@@ -394,12 +388,54 @@ char *img_to_stream(MagickWand *wand)
     return (char *)MagickGetImagesBlob(wand, &size);
 }
 
-FILE *open_file(char *filename)
+/*--------------------------------------------------------------------------
+ * FUNCTION:       open_file
+ *
+ * DATE:           October  09, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      NA
+ *
+ * RETURNS:        FILE * pointer to file stream
+ *
+ * NOTES:
+ * return the created file stream
+ * -----------------------------------------------------------------------*/
+FILE *open_file()
 {
+    char filename[FILE_LEN];
+    fprintf(stdout, "Enter New Image Name: ");
+    scanf("%s", filename);
+
     FILE *fp = fopen(filename, "wb+");
     return fp;
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       write_file
+ *
+ * DATE:           October  09, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      NA
+ *
+ * RETURNS:        FILE * pointer to file stream
+ *                 char *buffer - message to write
+ *                 int size - size of message
+ *
+ * NOTES:
+ * Writes buffer to file
+ * -----------------------------------------------------------------------*/
 int write_file(FILE *file, char *buffer, int size)
 {
     size_t result = -1;
@@ -407,6 +443,26 @@ int write_file(FILE *file, char *buffer, int size)
     return result;
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       parse_colour_string
+ *
+ * DATE:           October  09, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      long *clr - pointer to array of long to store rgb value
+ *                 char *colorStr - string of rgb 
+ *
+ * RETURNS:        
+ *
+ * NOTES:
+ * This function turns the rgb string to an array of longs representing
+ * r, g, b
+ * -----------------------------------------------------------------------*/
 void parse_colour_string(long *clr, char *colorStr)
 {
     // While there are more characters to process...
@@ -425,11 +481,49 @@ void parse_colour_string(long *clr, char *colorStr)
     }
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       parse_color_int
+ *
+ * DATE:           October  09, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      long *clr - array of long of r,g,b 
+ *                 char *colorStr - pointer to char array to store rgb string
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * Takes an array of long representing rgb and creates a string in the
+ * format "srgb(0,0,0)"
+ * -----------------------------------------------------------------------*/
 void parse_color_int(long *clr, char *colorStr)
 {
     sprintf(colorStr, "srgb(%lu,%lu,%lu)", clr[0], clr[1], clr[2]);
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       is_even
+ *
+ * DATE:           October  09, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      int num
+ *
+ * RETURNS:        boolean - true if even, false if odd
+ *
+ * NOTES:
+ * Returns if integer is even
+ * -----------------------------------------------------------------------*/
 bool is_even(int num)
 {
     if ((num % 2) == 0)

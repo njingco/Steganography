@@ -26,7 +26,11 @@
  *  ./dcstego -t stego -cm ./img/MARBLES.BMP -sm ./img/BLU.BMP 
  * 
  * Unstego
- *  ./dcstego -t unstego -cm ./img/MARBLES.BMP 
+ *  ./dcstego -t unstego -cm secret.BMP 
+ * 
+ * TODO:
+ * add encryption and decryption
+ * fix unstego fize size
  * ---------------------------------------------------------------------------------------*/
 #include "dcstego.h"
 
@@ -335,6 +339,24 @@ void break_wands(MagickWand *cover, MagickWand *secret)
     MagickWandTerminus();
 }
 
+/*--------------------------------------------------------------------------
+ * FUNCTION:       breakWand
+ *
+ * DATE:           October  09, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       Nicole Jingco
+ *
+ * PROGRAMMER:     Nicole Jingco
+ *
+ * INTERFACE:      MagickWand *cover
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * Closes the MagickWand
+ * -----------------------------------------------------------------------*/
 void break_wand(MagickWand *cover)
 {
     cover = DestroyMagickWand(cover);
