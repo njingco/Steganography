@@ -1,8 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef DCUTILS_H
+#define DCUTILS_H
+
 #include <openssl/conf.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
-#define SIGNATURE "NJ"
+#include "dcimage.h"
+#include "helper.h"
+
+bool stego(MagickWand *cover, MagickWand *secret);
+bool unstego(MagickWand *cover);
+
+#endif
