@@ -3,11 +3,37 @@
 #include <stdbool.h>
 #include <MagickWand/MagickWand.h>
 #include <string.h>
+#include <ctype.h>
 
 #define BMP "BMP3"
 #define FILE_LEN 80
+#define BUFFER_SIZE 1028
 
-bool isSupported(MagickWand *wand);
-bool saveImg(MagickWand *wand);
-bool isCoverSizeLarger(MagickWand *cover, MagickWand *secret);
+#define ThrowWandException(wand)                                                 \
+    {                                                                            \
+        char                                                                     \
+            *description;                                                        \
+                                                                                 \
+        ExceptionType                                                            \
+            severity;                                                            \
+                                                                                 \
+        description = MagickGetException(wand, &severity);                       \
+        (void)fprintf(stderr, "%s %s %lu %s\n", GetMagickModule(), description); \
+        description = (char *)MagickRelinquishMemory(description);               \
+        exit(-1);                                                                \
+    }
+
+bool is_supported(MagickWand *wand);
+bool save_img(MagickWand *wand);
+bool is_cover_larger(MagickWand *cover, MagickWand *secret);
+int get_img_size(MagickWand *wand);
 void stego(MagickWand *cover, MagickWand *secret);
+
+char *img_to_stream(MagickWand *wand);
+char *stuff_secret(MagickWand *cover, MagickWand *secret);
+
+FILE *open_file(char *filename);
+int write_file(FILE *file, char *buffer, int size);
+
+void parse_colour_string(long *clr, char *colorStr);
+void parse_color_int(long *clr, char *colorStr);

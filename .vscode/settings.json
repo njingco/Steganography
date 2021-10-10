@@ -3,6 +3,17 @@
         "string": "c",
         "magickwand.h": "c",
         "method-attribute.h": "c",
-        "magickcore.h": "c"
+        "magickcore.h": "c",
+        "chrono": "c",
+        "variant": "c",
+        "array": "c",
+        "hash_map": "c",
+        "deque": "c",
+        "list": "c",
+        "unordered_map": "c",
+        "unordered_set": "c",
+        "vector": "c",
+        "string_view": "c",
+        "initializer_list": "c"
     }
 }

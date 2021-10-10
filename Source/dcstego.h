@@ -9,8 +9,8 @@
 #define KEY_LEN 80
 
 void usage();
-void errMsg(char *msg);
-void setKey(char *key);
-void startStego(char *coverImage, char *secretImage);
-void startUnstego(char *coverImage);
-void breakWands(MagickWand *cover, MagickWand *secret);
+void err_msg(char *msg);
+void set_key(char *key);
+void start_stego(char *coverImage, char *secretImage);
+void start_unstego(char *coverImage);
+void break_wands(MagickWand *cover, MagickWand *secret);

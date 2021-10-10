@@ -67,18 +67,18 @@ int main(int argc, char *argv[])
     /* Check if task is to stego and run process*/
     if (stego)
     {
-        startStego(coverImage, secretImage);
+        start_stego(coverImage, secretImage);
     }
     else
     {
-        startUnstego(coverImage);
+        start_unstego(coverImage);
     }
 
     return 0;
 }
 
 /*--------------------------------------------------------------------------
- * FUNCTION:       startStego
+ * FUNCTION:       start_stego
  *
  * DATE:           October  08, 2021
  *
@@ -96,11 +96,11 @@ int main(int argc, char *argv[])
  * NOTES:
  * This function runs the stego process
  * -----------------------------------------------------------------------*/
-void startStego(char *coverImage, char *secretImage)
+void start_stego(char *coverImage, char *secretImage)
 {
     // char key[KEY_LEN];
     // Get password from user
-    // setKey(key);
+    // set_key(key);
 
     // check image type
     MagickWandGenesis();
@@ -109,50 +109,51 @@ void startStego(char *coverImage, char *secretImage)
     // Check Cover Image
     if (MagickReadImage(cover, coverImage) == MagickFalse)
     {
-        errMsg("Cover Image Error");
-        breakWands(cover, secret);
+        err_msg("Cover Image Error");
+        break_wands(cover, secret);
         exit(1);
     }
     // Check Secret Image
     if (MagickReadImage(secret, secretImage) == MagickFalse)
     {
-        errMsg("Secret Image Error");
-        breakWands(cover, secret);
+        err_msg("Secret Image Error");
+        break_wands(cover, secret);
         exit(1);
     }
 
     // Check if images file type are supported
-    if (!isSupported(cover) || !isSupported(secret))
+    if (!is_supported(cover) || !is_supported(secret))
     {
-        breakWands(cover, secret);
+        break_wands(cover, secret);
         exit(1);
     }
 
     // encrypt secret image--------------------------------------
 
     // check encrypter image file size
-    if (!isCoverSizeLarger(cover, secret))
+    if (!is_cover_larger(cover, secret))
     {
-        breakWands(cover, secret);
+        break_wands(cover, secret);
         exit(1);
     }
     // Stego images----------------------------------------------
+    stego(cover, secret);
 
     // Save Image
-    if (!saveImg(cover))
-    {
-        breakWands(cover, secret);
-        exit(1);
-    }
+    // if (!save_img(cover))
+    // {
+    //     break_wands(cover, secret);
+    //     exit(1);
+    // }
 
     // Close Wands
-    breakWands(cover, secret);
+    break_wands(cover, secret);
 
     exit(0);
 }
 
 /*--------------------------------------------------------------------------
- * FUNCTION:       startUnstego
+ * FUNCTION:       start_unstego
  *
  * DATE:           October  08, 2021
  *
@@ -169,7 +170,7 @@ void startStego(char *coverImage, char *secretImage)
  * NOTES:
  * This function runs the unstego process
  * -----------------------------------------------------------------------*/
-void startUnstego(char *coverImage)
+void start_unstego(char *coverImage)
 {
     // check image type
     MagickWandGenesis();
@@ -178,14 +179,14 @@ void startUnstego(char *coverImage)
     // Check Cover Image
     if (MagickReadImage(cover, coverImage) == MagickFalse)
     {
-        errMsg("Cover Image Error");
-        breakWands(cover, NULL);
+        err_msg("Cover Image Error");
+        break_wands(cover, NULL);
         exit(1);
     }
 
-    if (!isSupported(cover))
+    if (!is_supported(cover))
     {
-        breakWands(cover, NULL);
+        break_wands(cover, NULL);
         exit(1);
     }
 
@@ -194,20 +195,20 @@ void startUnstego(char *coverImage)
     // decrypt secret image--------------------------------------
 
     // Save Image
-    if (!saveImg(cover))
+    if (!save_img(cover))
     {
-        breakWands(cover, NULL);
+        break_wands(cover, NULL);
         exit(1);
     }
 
     // Close Wands
-    breakWands(cover, NULL);
+    break_wands(cover, NULL);
 
     exit(0);
 }
 
 /*--------------------------------------------------------------------------
- * FUNCTION:       setKey
+ * FUNCTION:       set_key
  *
  * DATE:           October  08, 2021
  *
@@ -224,7 +225,7 @@ void startUnstego(char *coverImage)
  * NOTES:
  * This function gets the password key for the encyption process
  * -----------------------------------------------------------------------*/
-void setKey(char *key)
+void set_key(char *key)
 {
     struct termios term;
     int keyMatch = 0;
@@ -288,7 +289,7 @@ void usage()
 }
 
 /*--------------------------------------------------------------------------
- * FUNCTION:       errMsg
+ * FUNCTION:       err_msg
  *
  * DATE:           October  08, 2021
  *
@@ -305,7 +306,7 @@ void usage()
  * NOTES:
  * Prints the error message
  * -----------------------------------------------------------------------*/
-void errMsg(char *msg)
+void err_msg(char *msg)
 {
     fprintf(stderr, "%s\n", msg);
 }
@@ -328,7 +329,7 @@ void errMsg(char *msg)
  * NOTES:
  * Closes the MagickWands
  * -----------------------------------------------------------------------*/
-void breakWands(MagickWand *cover, MagickWand *secret)
+void break_wands(MagickWand *cover, MagickWand *secret)
 {
     cover = DestroyMagickWand(cover);
     secret = DestroyMagickWand(secret);
