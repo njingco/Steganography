@@ -41,7 +41,7 @@
  * -----------------------------------------------------------------------*/
 bool is_supported(MagickWand *wand)
 {
-    char *supported[] = {"BMP", "BMP3"};
+    char *supported[] = {"BMP", "BMP3", "PNG", "JPEG"};
     char *type = MagickGetImageFormat(wand);
     char *name = MagickGetImageFilename(wand);
 

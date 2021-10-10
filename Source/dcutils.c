@@ -110,7 +110,6 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
                     // Check if at the end of the stream
                     if ((streamIndex++) >= get_img_size(secretWand))
                     {
-                        fprintf(stdout, "SW: %d\n", get_img_size(secretWand));
                         PixelSyncIterator(cover);
                         save_img(coverWand);
                         return true;
@@ -218,5 +217,6 @@ bool unstego(MagickWand *coverWand)
         }
     }
     fclose(fp);
+    fprintf(stdout, "Done Making Image\n");
     return true;
 }

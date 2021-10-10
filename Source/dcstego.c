@@ -23,7 +23,9 @@
  * 
  * Usage:
  * Stego
- *  ./dcstego -t stego -cm ./img/MARBLES.BMP -sm ./img/BLU.BMP 
+ *  ./dcstego -t stego -cm ./img/BMP/MARBLES.BMP -sm ./img/BMP/BLU.BMP 
+ *  ./dcstego -t stego -cm ./img/PNG/FOREST.png -sm ./img/PNG/TEAL.png 
+ *  ./dcstego -t stego -cm ./img/JPG/FOREST.jpg -sm ./img/JPG/RED.jpg 
  * 
  * Unstego
  *  ./dcstego -t unstego -cm secret.BMP 
@@ -116,14 +118,14 @@ void start_stego(char *coverImage, char *secretImage)
     // Check Cover Image
     if (MagickReadImage(cover, coverImage) == MagickFalse)
     {
-        err_msg("Cover Image Error");
+        err_msg("Cover Image Wand Error");
         break_wands(cover, secret);
         exit(1);
     }
     // Check Secret Image
     if (MagickReadImage(secret, secretImage) == MagickFalse)
     {
-        err_msg("Secret Image Error");
+        err_msg("Secret Image Wand Error");
         break_wands(cover, secret);
         exit(1);
     }
@@ -153,7 +155,7 @@ void start_stego(char *coverImage, char *secretImage)
     }
 
     // Close Wands
-    break_wands(cover, secret);
+    // break_wands(cover, secret);
 
     exit(0);
 }
@@ -205,7 +207,7 @@ void start_unstego(char *coverImage)
     }
 
     // Close Wands
-    break_wand(cover);
+    // break_wand(cover);
 
     exit(0);
 }
