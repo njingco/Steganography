@@ -43,13 +43,20 @@
  * -----------------------------------------------------------------------*/
 bool is_supported(MagickWand *wand)
 {
+    char *supported[] = {"BMP", "BMP3"};
     char *type = MagickGetImageFormat(wand);
     char *name = MagickGetImageFilename(wand);
 
-    if (strcmp(BMP, type) == 0)
+    int length = (sizeof(supported) / sizeof(char *));
+
+    for (int i = 0; i < length; i++)
     {
-        return true;
+        if (strcmp(supported[i], type) == 0)
+        {
+            return true;
+        }
     }
+
     fprintf(stdout, "Image: %s  \nType: %s is NOT Supported\n\n", name, type);
     return false;
 }
@@ -268,6 +275,7 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
                     if ((streamIndex++) >= get_img_size(secretWand))
                     {
                         PixelSyncIterator(cover);
+                        save_img(coverWand);
                         return true;
                     }
                     // Move to next character in stream
@@ -298,7 +306,7 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
  * NOTES:
  * 
  * -----------------------------------------------------------------------*/
-char *unstego(MagickWand *coverWand)
+bool unstego(MagickWand *coverWand)
 {
     PixelIterator *cover;
     PixelWand **cPixels;
@@ -307,14 +315,18 @@ char *unstego(MagickWand *coverWand)
     long rgb[3];
     char *rgbString;
 
-    int streamIndex = 0;
     int binIndex = 7;
     int even = 0;
-    char *secretStream = (char *)malloc(get_img_size(coverWand) / 8);
+
     unsigned char tempChar = 0;
 
+    FILE *fp = open_file("secret");
+
     if ((cover == (PixelIterator *)NULL))
+    {
         ThrowWandException(coverWand);
+        return false;
+    }
 
     fprintf(stdout, "Unstegoing Image...\n");
 
@@ -333,32 +345,29 @@ char *unstego(MagickWand *coverWand)
             rgbString = PixelGetColorAsString(cPixels[j]);
             parse_colour_string(rgb, rgbString);
 
-            // memset(tempChar, 0, 1);
             for (int k = 0; k < 3; k++)
             {
                 even = (!(is_even(rgb[k])));
                 tempChar |= (even == 1) << binIndex;
 
                 binIndex--;
+
                 //reset binIndex
                 if (binIndex < 0)
                 {
                     binIndex = 7;
-                    secretStream[streamIndex] = tempChar;
-                    tempChar = 0;
-                    // fprintf(stdout, "%d ", secretStream[streamIndex]);
-                    if (secretStream[streamIndex] == EOF)
+                    // Write to to file
+                    if (fputc(tempChar, fp) == -1)
                     {
-                        fprintf(stdout, "\nFound EOF\n");
-                        return secretStream;
+                        return false;
                     }
-                    streamIndex++;
+                    tempChar = 0;
                 }
             }
         }
     }
-    fprintf(stdout, "Did not find EOF\n");
-    return secretStream;
+    fclose(fp);
+    return true;
 }
 
 /*--------------------------------------------------------------------------

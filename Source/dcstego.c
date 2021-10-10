@@ -125,11 +125,11 @@ void start_stego(char *coverImage, char *secretImage)
     }
 
     // Check if images file type are supported
-    // if (!is_supported(cover) || !is_supported(secret))
-    // {
-    //     break_wands(cover, secret);
-    //     exit(1);
-    // }
+    if (!is_supported(cover) || !is_supported(secret))
+    {
+        break_wands(cover, secret);
+        exit(1);
+    }
 
     // encrypt secret image--------------------------------------
 
@@ -140,17 +140,10 @@ void start_stego(char *coverImage, char *secretImage)
         exit(1);
     }
 
-    // Stego images----------------------------------------------
+    // Stego images and save new image
     if (!stego(cover, secret))
     {
         err_msg("Something went wrong with the stego process\n");
-        break_wands(cover, secret);
-        exit(1);
-    }
-
-    // Save Image
-    if (!save_img(cover))
-    {
         break_wands(cover, secret);
         exit(1);
     }
@@ -193,43 +186,19 @@ void start_unstego(char *coverImage)
         exit(1);
     }
 
-    // if (!is_supported(cover))
-    // {
-    //     break_wands(cover, NULL);
-    //     exit(1);
-    // }
-
-    // untego image----------------------------------------------
-    char *secret = (char *)malloc(get_img_size(cover));
-    secret = unstego(cover);
-
-    FILE *fp = open_file("secret");
-    if (write_file(fp, secret, get_img_size(cover)) == -1)
+    if (!is_supported(cover))
     {
-        err_msg("Can't write File");
         break_wand(cover);
         exit(1);
     }
-    fprintf(stdout, "Done Writing\n\n");
 
-    // decrypt secret image--------------------------------------
-
-    // Check Cover Image
-    // MagickWand *secretWand = NewMagickWand();
-
-    // if (MagickReadImageFile(secretWand, fp) == MagickFalse)
-    // {
-    //     err_msg("Making Secret Wand Error");
-    //     break_wands(cover, secretWand);
-    //     exit(1);
-    // }
-
-    // // Save Image
-    // if (!save_img(secretWand))
-    // {
-    //     break_wands(cover, secretWand);
-    //     exit(1);
-    // }
+    // unstego image and save image
+    if (!unstego(cover))
+    {
+        err_msg("Something went wrong with the unstegoing process\n");
+        break_wand(cover);
+        exit(1);
+    }
 
     // Close Wands
     break_wand(cover);

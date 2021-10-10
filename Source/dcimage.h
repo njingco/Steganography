@@ -5,7 +5,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#define BMP "BMP3"
 #define FILE_LEN 80
 #define BUFFER_SIZE 1028
 
@@ -28,7 +27,7 @@ bool save_img(MagickWand *wand);
 bool is_cover_larger(MagickWand *cover, MagickWand *secret);
 int get_img_size(MagickWand *wand);
 bool stego(MagickWand *cover, MagickWand *secret);
-char *unstego(MagickWand *cover);
+bool unstego(MagickWand *cover);
 
 char *img_to_stream(MagickWand *wand);
 char *stuff_secret(MagickWand *cover, MagickWand *secret);
