@@ -41,7 +41,10 @@
  * -----------------------------------------------------------------------*/
 bool is_supported(MagickWand *wand)
 {
-    char *supported[] = {"BMP", "BMP3", "PNG", "JPEG"};
+    char *supported[] = {
+        "BMP",
+        "BMP3",
+        "PNG"};
     char *type = MagickGetImageFormat(wand);
     char *name = MagickGetImageFilename(wand);
 
@@ -144,7 +147,7 @@ bool save_img(MagickWand *wand)
     MagickBooleanType status;
 
     char newImgName[FILE_LEN];
-    fprintf(stdout, "Enter New Image Name:");
+    fprintf(stdout, "\nEnter New Image Name: ");
     scanf("%s", newImgName);
 
     status = MagickWriteImages(wand, newImgName, MagickTrue);

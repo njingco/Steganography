@@ -25,10 +25,10 @@
  * Stego
  *  ./dcstego -t stego -cm ./img/BMP/MARBLES.BMP -sm ./img/BMP/BLU.BMP 
  *  ./dcstego -t stego -cm ./img/PNG/FOREST.png -sm ./img/PNG/TEAL.png 
- *  ./dcstego -t stego -cm ./img/JPG/FOREST.jpg -sm ./img/JPG/RED.jpg 
+//  *  ./dcstego -t stego -cm ./img/JPG/FOREST.jpg -sm ./img/JPG/RED.jpg 
  * 
  * Unstego
- *  ./dcstego -t unstego -cm secret.BMP 
+ *  ./dcstego -t unstego -cm test 
  * 
  * TODO:
  * add encryption and decryption

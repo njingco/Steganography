@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <termios.h>
 #include <MagickWand/MagickWand.h>
+#include <arpa/inet.h>
 
 #define FILE_LEN 80
 #define BUFFER_SIZE 1028

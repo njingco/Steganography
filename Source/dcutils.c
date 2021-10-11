@@ -53,16 +53,25 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
 
     int streamIndex = 0;
     int binIndex = 7;
+    int charCount = 0;
+
+    unsigned int number = htonl(get_img_size(secretWand));
+    char *size = (char *)malloc(4);
+    fprintf(stdout, "\nSecret Size: %d", get_img_size(secretWand));
+
+    memcpy(size, &number, 4);
 
     char *streamChar = (char *)malloc(1);
     char *tempChar = (char *)malloc(1);
 
-    *streamChar = secretStream[streamIndex];
+    *streamChar = *size;
+
+    // *streamChar = secretStream[streamIndex];
 
     if ((cover == (PixelIterator *)NULL))
         ThrowWandException(coverWand);
 
-    fprintf(stdout, "Stegoing Image...\n");
+    fprintf(stdout, "\nStegoing Image...\n");
 
     // Get Height
     for (int i = 0; i < (ssize_t)MagickGetImageHeight(coverWand); i++)
@@ -106,16 +115,28 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
                 binIndex--;
                 if (binIndex < 0)
                 {
-                    binIndex = 7;
-                    // Check if at the end of the stream
-                    if ((streamIndex++) >= get_img_size(secretWand))
-                    {
-                        PixelSyncIterator(cover);
-                        save_img(coverWand);
-                        return true;
-                    }
+
                     // Move to next character in stream
-                    *streamChar = secretStream[streamIndex];
+                    if (charCount < 4)
+                    {
+                        *streamChar = *(++size);
+                        fprintf(stdout, "\nSize: %02x", *streamChar);
+                    }
+                    else
+                    {
+                        *streamChar = secretStream[streamIndex];
+
+                        // Check if at the end of the stream
+                        if ((streamIndex++) >= get_img_size(secretWand))
+                        {
+                            PixelSyncIterator(cover);
+                            save_img(coverWand);
+                            return true;
+                        }
+                    }
+
+                    charCount++;
+                    binIndex = 7;
                 }
             }
             PixelSyncIterator(cover);
@@ -153,6 +174,9 @@ bool unstego(MagickWand *coverWand)
     long rgb[3];
     char *rgbString;
 
+    char charSize[4];
+    unsigned int size = 0;
+
     int binIndex = 7;
     int even = 0;
     unsigned char tempChar = 0;
@@ -185,6 +209,8 @@ bool unstego(MagickWand *coverWand)
 
             for (int k = 0; k < 3; k++)
             {
+                // Get file size form the first 32 Bytes
+
                 even = (!(is_even(rgb[k])));
                 tempChar |= (even == 1) << binIndex;
 
@@ -194,29 +220,39 @@ bool unstego(MagickWand *coverWand)
                 if (binIndex < 0)
                 {
                     binIndex = 7;
-                    charCount++;
 
-                    // if (charCount >= 86454)
-                    // if (charCount <= 200)
-                    // {
-                    //     fprintf(stdout, "%d ", tempChar);
-
-                    //     // fclose(fp);
-                    //     // return true;
-                    // }
-
-                    // Write to to file
-                    if (fputc(tempChar, fp) == -1)
+                    if (charCount < 4)
                     {
-                        return false;
+                        charSize[charCount] = tempChar;
+                        fprintf(stdout, "\nSize: %02x", charSize[charCount]);
                     }
-
+                    else if (charCount == 4)
+                    {
+                        // convert char array to int size
+                        memcpy(&size, &charSize, 4);
+                        size = htonl(size);
+                        fprintf(stdout, "\nTotal Size: %d", size);
+                    }
+                    else
+                    {
+                        if (fputc(tempChar, fp) == -1)
+                        {
+                            return false;
+                        }
+                    }
+                    charCount++;
                     tempChar = 0;
+                    if (charCount >= (size + 5))
+                    {
+                        fclose(fp);
+                        fprintf(stdout, "\nDone Making Imagee\n");
+                        return true;
+                    }
                 }
             }
         }
     }
     fclose(fp);
-    fprintf(stdout, "Done Making Image\n");
+    fprintf(stdout, "\nDone Making Image\n");
     return true;
 }
