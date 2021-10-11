@@ -1,14 +1,15 @@
 CC=gcc -Wall -g
 CLIB = -lpthread -lrt
 MW = `pkg-config --cflags --libs MagickWand`
+SSL = -lssl -lcrypto
 
 all: dcstego  
 
 dcstego: dcstego.o dcimage.o dcutils.o helper.o
-	$(CC) -o dcstego dcstego.o dcimage.o dcutils.o helper.o $(MW) 
+	$(CC) -o dcstego dcstego.o dcimage.o dcutils.o helper.o $(MW) $(SSL)
 
 dcutils: dcutils.o
-	$(CC) -o dcutils dcutils.o $(MW) 
+	$(CC) -o dcutils dcutils.o $(MW) $(SSL)
 
 dcimage: dcimage.o
 	$(CC) -o dcimage dcimage.o $(MW)
@@ -20,7 +21,7 @@ clean:
 	rm -f *.o  dcstego dcutils dcimage helper secret 
 
 dcstego.o:
-	$(CC) -c dcstego.c $(MW) 
+	$(CC) -c dcstego.c $(MW) $(SSL)
 
 dcutils.o:
 	$(CC) -c dcutils.c $(MW) 

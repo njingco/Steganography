@@ -5,11 +5,11 @@
 #include "dcimage.h"
 #include "helper.h"
 
-#define KEY_LEN 80
+#define KEY_LEN 32
 
 void start_stego(char *coverImage, char *secretImage);
 void start_unstego(char *coverImage);
-void set_key(char *key);
+void set_key(char *key1);
 void usage();
 
 #endif

@@ -1,6 +1,6 @@
 /**
  * Compile:
- * gcc -Wall -g -o cypher.o cypher.c -lssl -lcrypto `pkg-config --cflags --libs MagickWand`
+ * gcc -Wall -o cypher.o cypher.c -lssl -lcrypto `pkg-config --cflags --libs MagickWand`
 */
 
 #include <string.h>
@@ -9,8 +9,15 @@
 #include <openssl/conf.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
-
+#include <MagickWand/MagickWand.h>
 #include <termios.h>
+
+void handleErrors(void)
+{
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+
 int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
             unsigned char *iv, unsigned char *ciphertext)
 {
@@ -101,7 +108,82 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
     return plaintext_len;
 }
 
+int get_img_size(MagickWand *wand)
+{
+    MagickSizeType wandLen = 0;
+
+    // Cover image size
+    MagickGetImageLength(wand, &wandLen);
+    return wandLen;
+}
+
 int main()
 {
+    fprintf(stdout, "Start...\n\n");
+
+    FILE *enc = fopen("Encrypted", "w+");
+    FILE *dec = fopen("Decrypted", "w+");
+
+    // // MagicWand ---------------------------------------------------------------
+
+    MagickWandGenesis();
+    MagickWand *wand = NewMagickWand();
+    // // Check Secret Image
+    if (MagickReadImage(wand, "./img/BMP/BLU.BMP") == MagickFalse)
+    {
+        fprintf(stdout, "Wand problem\n");
+        wand = DestroyMagickWand(wand);
+        MagickWandTerminus();
+        exit(1);
+    }
+
+    int imgSize = get_img_size(wand);
+    size_t size = (size_t)imgSize;
+    char *plaintext = (char *)MagickGetImagesBlob(wand, &size);
+
+    // Read File ---------------------------------------------------------------
+
+    // int imgSize = 0;
+
+    // FILE *img = fopen("./img/PNG/SUN.png", "r+");
+    // fseek(img, 0L, SEEK_END);
+    // imgSize = ftell(img);
+    // fseek(img, 0L, SEEK_SET);
+
+    // unsigned char *plaintext = calloc(1, imgSize + 1);
+    // if (1 != fread(plaintext, imgSize, 1, img))
+    //     fclose(img);
+
+    // fprintf(stdout, "Text Size: %d \nPlainText: %s\n\n", imgSize, plaintext);
+
+    // Init ------------------------------------------------------------------
+
+    unsigned char key[80];
+    scanf("Key: %hhu", key);
+    unsigned char *iv = (unsigned char *)"01234567890123412501234560123456";
+
+    int decryptedtext_len, ciphertext_len;
+
+    unsigned char ciphertext[imgSize];
+    unsigned char decryptedtext[imgSize];
+
+    fprintf(stdout, "Key : %d\n", key);
+    // Encrypt ---------------------------------------------------------------
+
+    ciphertext_len = encrypt((unsigned char *)plaintext, imgSize, key, iv, ciphertext);
+    fwrite(ciphertext, 1, ciphertext_len, enc);
+
+    fprintf(stdout, "ciphertext_len: %d\n", ciphertext_len);
+
+    // // Decrypt ---------------------------------------------------------------
+
+    decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, iv, decryptedtext);
+    fwrite(decryptedtext, 1, decryptedtext_len, dec);
+
+    fprintf(stdout, "decryptedtext_len: %d\n", decryptedtext_len);
+
+    free(plaintext);
+    fclose(enc);
+    fclose(dec);
     return 0;
 }

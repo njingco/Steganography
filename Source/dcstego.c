@@ -24,8 +24,8 @@
  * Usage:
  * Stego
  *  ./dcstego -t stego -cm ./img/BMP/MARBLES.BMP -sm ./img/BMP/BLU.BMP 
- *  ./dcstego -t stego -cm ./img/PNG/FOREST.png -sm ./img/PNG/TEAL.png 
-//  *  ./dcstego -t stego -cm ./img/JPG/FOREST.jpg -sm ./img/JPG/RED.jpg 
+ *  ./dcstego -t stego -cm ./img/PNG/FOREST.png -sm ./img/PNG/SUN.png 
+ *  ./dcstego -t stego -cm ./img/JPG/FOREST.jpg -sm ./img/JPG/RED.jpg 
  * 
  * Unstego
  *  ./dcstego -t unstego -cm test 
@@ -106,9 +106,13 @@ int main(int argc, char *argv[])
  * -----------------------------------------------------------------------*/
 void start_stego(char *coverImage, char *secretImage)
 {
-    // char key[KEY_LEN];
     // Get password from user
-    // set_key(key);
+    unsigned char *key = (unsigned char *)malloc(KEY_LEN);
+    fprintf(stdout, "Enter key:");
+    // scanf("%hhu", key);
+    // fflush(stdin);
+
+    fgets((char *)key, KEY_LEN, stdin);
 
     // check image type
     MagickWandGenesis();
@@ -137,8 +141,6 @@ void start_stego(char *coverImage, char *secretImage)
         exit(1);
     }
 
-    // encrypt secret image--------------------------------------
-
     // check encrypter image file size
     if (!is_cover_larger(cover, secret))
     {
@@ -147,7 +149,7 @@ void start_stego(char *coverImage, char *secretImage)
     }
 
     // Stego images and save new image
-    if (!stego(cover, secret))
+    if (!stego(cover, secret, (unsigned char *)key, (unsigned char *)IV))
     {
         err_msg("Something went wrong with the stego process\n");
         break_wands(cover, secret);
@@ -155,7 +157,7 @@ void start_stego(char *coverImage, char *secretImage)
     }
 
     // Close Wands
-    // break_wands(cover, secret);
+    break_wands(cover, secret);
 
     exit(0);
 }
@@ -180,6 +182,12 @@ void start_stego(char *coverImage, char *secretImage)
  * -----------------------------------------------------------------------*/
 void start_unstego(char *coverImage)
 {
+    // Get password from user
+    unsigned char *key = (unsigned char *)malloc(KEY_LEN);
+    fprintf(stdout, "Enter key:");
+    // scanf("%hhu", key);
+    fgets((char *)key, KEY_LEN, stdin);
+
     // check image type
     MagickWandGenesis();
     MagickWand *cover = NewMagickWand();
@@ -199,7 +207,7 @@ void start_unstego(char *coverImage)
     }
 
     // unstego image and save image
-    if (!unstego(cover))
+    if (!unstego(cover, (unsigned char *)key, (unsigned char *)IV))
     {
         err_msg("Something went wrong with the unstegoing process\n");
         break_wand(cover);
@@ -207,7 +215,7 @@ void start_unstego(char *coverImage)
     }
 
     // Close Wands
-    // break_wand(cover);
+    break_wand(cover);
 
     exit(0);
 }
@@ -230,11 +238,11 @@ void start_unstego(char *coverImage)
  * NOTES:
  * This function gets the password key for the encyption process
  * -----------------------------------------------------------------------*/
-void set_key(char *key)
+void set_key(char *key1)
 {
     struct termios term;
     int keyMatch = 0;
-    char key2[80];
+    char key2[KEY_LEN];
 
     // Get password
     tcgetattr(fileno(stdin), &term);
@@ -245,13 +253,16 @@ void set_key(char *key)
         tcsetattr(fileno(stdin), 0, &term);
 
         fprintf(stdout, "Enter key:");
-        scanf("%s", key);
+        fscanf(stdin, "%s", key1);
+        fflush(stdin);
+
         fprintf(stdout, "\nEnter key again:");
-        scanf("%s", key2);
+        fscanf(stdin, "%s", key2);
         fprintf(stdout, "\n");
+        fflush(stdin);
 
         // Check if key matches
-        if (strcmp(key, key2) == 0)
+        if (strcmp(key1, key2) == 0)
         {
             keyMatch = 1;
         }

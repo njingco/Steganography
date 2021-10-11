@@ -71,7 +71,7 @@ FILE *open_file()
     fprintf(stdout, "Enter New Image Name: ");
     scanf("%s", filename);
 
-    FILE *fp = fopen(filename, "wb+");
+    FILE *fp = fopen(filename, "w+");
     return fp;
 }
 

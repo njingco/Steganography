@@ -40,13 +40,12 @@
  * This function handles the steganography process by filling the last 
  * bit of each carrier byte and saves the image
  * -----------------------------------------------------------------------*/
-bool stego(MagickWand *coverWand, MagickWand *secretWand)
+bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, unsigned char *iv)
 {
     PixelIterator *cover;
     PixelWand **cPixels;
     size_t cWidth;
     cover = NewPixelIterator(coverWand);
-    char *secretStream = img_to_stream(secretWand);
 
     long rgb[3];
     char *rgbString;
@@ -55,19 +54,27 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
     int binIndex = 7;
     int charCount = 0;
 
-    unsigned int number = htonl(get_img_size(secretWand));
-    char *size = (char *)malloc(4);
-    fprintf(stdout, "\nSecret Size: %d", get_img_size(secretWand));
-
-    memcpy(size, &number, 4);
-
     char *streamChar = (char *)malloc(1);
     char *tempChar = (char *)malloc(1);
 
+    // Ecrypt Secret Data and get Cypher size
+
+    int imgSize = get_img_size(secretWand);
+    char *secretStream = img_to_stream(secretWand);
+
+    unsigned char ciphertext[imgSize];
+    int ciphertext_len = encrypt((unsigned char *)secretStream, imgSize, key, iv, ciphertext);
+
+    unsigned int number = htonl(ciphertext_len);
+    char *size = (char *)malloc(4);
+    memcpy(size, &number, 4);
+
     *streamChar = *size;
 
-    // *streamChar = secretStream[streamIndex];
+    fprintf(stdout, "\nSecret Size: %d", imgSize);
+    fprintf(stdout, "\nCypher Size: %d", ciphertext_len);
 
+    // Start Pixel Iterator
     if ((cover == (PixelIterator *)NULL))
         ThrowWandException(coverWand);
 
@@ -124,13 +131,16 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
                     }
                     else
                     {
-                        *streamChar = secretStream[streamIndex];
+                        *streamChar = ciphertext[streamIndex];
 
                         // Check if at the end of the stream
-                        if ((streamIndex++) >= get_img_size(secretWand))
+                        if ((streamIndex++) >= ciphertext_len)
                         {
                             PixelSyncIterator(cover);
                             save_img(coverWand);
+
+                            free(tempChar);
+                            free(streamChar);
                             return true;
                         }
                     }
@@ -142,6 +152,10 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
             PixelSyncIterator(cover);
         }
     }
+    fprintf(stdout, "\n rip");
+
+    free(tempChar);
+    free(streamChar);
     return false;
 }
 
@@ -165,7 +179,7 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand)
  * This function handles the steganography process by extracting the 
  * last bit in each cover image byte and writing it to the image file
  * -----------------------------------------------------------------------*/
-bool unstego(MagickWand *coverWand)
+bool unstego(MagickWand *coverWand, unsigned char *key, unsigned char *iv)
 {
     PixelIterator *cover;
     PixelWand **cPixels;
@@ -182,7 +196,7 @@ bool unstego(MagickWand *coverWand)
     unsigned char tempChar = 0;
     int charCount = 0;
 
-    FILE *fp = open_file();
+    FILE *fp = fopen("temp", "w+");
 
     if ((cover == (PixelIterator *)NULL))
     {
@@ -244,7 +258,25 @@ bool unstego(MagickWand *coverWand)
                     tempChar = 0;
                     if (charCount >= (size + 5))
                     {
+                        fprintf(stdout, "\n\nSize: %d\n", size);
+                        unsigned char decryptedtext[size];
+
                         fclose(fp);
+                        fp = fopen("temp", "r");
+
+                        unsigned char *ciphertext = (unsigned char *)malloc(size);
+                        fread(ciphertext, size, 1, fp);
+                        fclose(fp);
+
+                        FILE *secretFile = fopen("secret", "w+");
+                        fwrite(ciphertext, 1, size, secretFile);
+                        fclose(secretFile);
+
+                        int decryptedtext_len = decrypt(ciphertext, size, key, iv, decryptedtext);
+                        secretFile = open_file();
+                        fwrite(decryptedtext, 1, decryptedtext_len, secretFile);
+
+                        fclose(secretFile);
                         fprintf(stdout, "\nDone Making Imagee\n");
                         return true;
                     }
@@ -255,4 +287,161 @@ bool unstego(MagickWand *coverWand)
     fclose(fp);
     fprintf(stdout, "\nDone Making Image\n");
     return true;
+}
+
+/*--------------------------------------------------------------------------
+ * FUNCTION:       handleErrors
+ *
+ * DATE:           October  10, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       OpenSSL Wiki
+ *
+ * PROGRAMMER:     OpenSSL Wiki
+ *
+ * INTERFACE:      NA
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * Handles the errors
+ * 
+ * Source:
+ * https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
+ * -----------------------------------------------------------------------*/
+void handleErrors(void)
+{
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+
+/*--------------------------------------------------------------------------
+ * FUNCTION:       encrypt
+ *
+ * DATE:           October  10, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       OpenSSL Wiki
+ *
+ * PROGRAMMER:     OpenSSL Wiki
+ *
+ * INTERFACE:      NA
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * Encrypts the unsigned char *
+ * 
+ * Source:
+ * https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
+ * -----------------------------------------------------------------------*/
+int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key, unsigned char *iv, unsigned char *ciphertext)
+{
+    EVP_CIPHER_CTX *ctx;
+
+    int len;
+
+    int ciphertext_len;
+
+    /* Create and initialise the context */
+    if (!(ctx = EVP_CIPHER_CTX_new()))
+        handleErrors();
+
+    /*
+     * Initialise the encryption operation. IMPORTANT - ensure you use a key
+     * and IV size appropriate for your cipher
+     * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+     * IV size for *most* modes is the same as the block size. For AES this
+     * is 128 bits
+     */
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
+        handleErrors();
+
+    /*
+     * Provide the message to be encrypted, and obtain the encrypted output.
+     * EVP_EncryptUpdate can be called multiple times if necessary
+     */
+    if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
+        handleErrors();
+    ciphertext_len = len;
+
+    /*
+     * Finalise the encryption. Further ciphertext bytes may be written at
+     * this stage.
+     */
+    if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
+        handleErrors();
+    ciphertext_len += len;
+
+    /* Clean up */
+    EVP_CIPHER_CTX_free(ctx);
+
+    return ciphertext_len;
+}
+
+/*--------------------------------------------------------------------------
+ * FUNCTION:       decrypt
+ *
+ * DATE:           October  10, 2021
+ *
+ * REVISIONS:      NA
+ * 
+ * DESIGNER:       OpenSSL Wiki
+ *
+ * PROGRAMMER:     OpenSSL Wiki
+ *
+ * INTERFACE:      NA
+ *
+ * RETURNS:        NA
+ *
+ * NOTES:
+ * Decrypts the Cipher
+ * 
+ * Source:
+ * https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
+ * -----------------------------------------------------------------------*/
+int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key, unsigned char *iv, unsigned char *plaintext)
+{
+    EVP_CIPHER_CTX *ctx;
+
+    int len;
+
+    int plaintext_len;
+
+    /* Create and initialise the context */
+    if (!(ctx = EVP_CIPHER_CTX_new()))
+        handleErrors();
+
+    /*
+     * Initialise the decryption operation. IMPORTANT - ensure you use a key
+     * and IV size appropriate for your cipher
+     * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+     * IV size for *most* modes is the same as the block size. For AES this
+     * is 128 bits
+     */
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
+        handleErrors();
+
+    /*
+     * Provide the message to be decrypted, and obtain the plaintext output.
+     * EVP_DecryptUpdate can be called multiple times if necessary.
+     */
+    if (1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len))
+        handleErrors();
+    plaintext_len = len;
+
+    /*
+     * Finalise the decryption. Further plaintext bytes may be written at
+     * this stage.
+     */
+    if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
+        handleErrors();
+    plaintext_len += len;
+
+    /* Clean up */
+    EVP_CIPHER_CTX_free(ctx);
+
+    return plaintext_len;
 }
