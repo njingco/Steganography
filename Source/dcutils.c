@@ -30,15 +30,18 @@
  *
  * PROGRAMMER:     Nicole Jingco
  *
- * INTERFACE:      MagickWand *coverWand
- *                 MagickWand *secretWand
+ * INTERFACE:      bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, unsigned char *iv);
+ *                 bool unstego(MagickWand *coverWand, unsigned char *key, unsigned char *iv);
+ *                 void handleErrors(void);
+ *                 int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key, unsigned char *iv, unsigned char *ciphertext);
+ *                 int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key, unsigned char *iv, unsigned char *plaintext);
  *
  * RETURNS:        true if successfull in stegoing image,
  *                 false if unsuccessful in steoing image
  *
  * NOTES:
- * This function handles the steganography process by filling the last 
- * bit of each carrier byte and saves the image
+ * This function handles the steganography process by encrypting the
+ * secret data filling the last bit of each carrier byte and saves the image 
  * -----------------------------------------------------------------------*/
 bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, unsigned char *iv)
 {
@@ -68,17 +71,15 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, un
     unsigned int number = htonl(ciphertext_len);
     char *size = (char *)malloc(4);
     memcpy(size, &number, 4);
-
     *streamChar = *size;
-
-    fprintf(stdout, "\nSecret Size: %d", imgSize);
-    fprintf(stdout, "\nCypher Size: %d", ciphertext_len);
 
     // Start Pixel Iterator
     if ((cover == (PixelIterator *)NULL))
         ThrowWandException(coverWand);
 
-    fprintf(stdout, "\nStegoing Image...\n");
+    fprintf(stdout, "\n-------------------------\n");
+    fprintf(stdout, "Unstegoing Image...");
+    fprintf(stdout, "\n-------------------------\n");
 
     // Get Height
     for (int i = 0; i < (ssize_t)MagickGetImageHeight(coverWand); i++)
@@ -122,12 +123,10 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, un
                 binIndex--;
                 if (binIndex < 0)
                 {
-
                     // Move to next character in stream
                     if (charCount < 4)
                     {
                         *streamChar = *(++size);
-                        fprintf(stdout, "\nSize: %02x", *streamChar);
                     }
                     else
                     {
@@ -144,7 +143,6 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, un
                             return true;
                         }
                     }
-
                     charCount++;
                     binIndex = 7;
                 }
@@ -152,7 +150,6 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, un
             PixelSyncIterator(cover);
         }
     }
-    fprintf(stdout, "\n rip");
 
     free(tempChar);
     free(streamChar);
@@ -171,13 +168,16 @@ bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, un
  * PROGRAMMER:     Nicole Jingco
  *
  * INTERFACE:      MagickWand *coverWand
+ *                 unsigned char *key
+ *                 unsigned char *iv
  *
  * RETURNS:        true if successfull in unstegoing image,
  *                 false if unsuccessful in unsteoing image
  *
  * NOTES:
  * This function handles the steganography process by extracting the 
- * last bit in each cover image byte and writing it to the image file
+ * last bit in each cover image byte and writing it to the image file 
+ * as well as decrypt it
  * -----------------------------------------------------------------------*/
 bool unstego(MagickWand *coverWand, unsigned char *key, unsigned char *iv)
 {
@@ -196,15 +196,16 @@ bool unstego(MagickWand *coverWand, unsigned char *key, unsigned char *iv)
     unsigned char tempChar = 0;
     int charCount = 0;
 
-    FILE *fp = fopen("temp", "w+");
+    FILE *fp = fopen("tempEncriptedFile", "w+");
 
     if ((cover == (PixelIterator *)NULL))
     {
         ThrowWandException(coverWand);
         return false;
     }
-
-    fprintf(stdout, "Unstegoing Image...\n");
+    fprintf(stdout, "\n-------------------------\n");
+    fprintf(stdout, "Unstegoing Image...");
+    fprintf(stdout, "\n-------------------------\n");
 
     // Get Height
     for (int i = 0; i < (ssize_t)MagickGetImageHeight(coverWand); i++)
@@ -238,14 +239,12 @@ bool unstego(MagickWand *coverWand, unsigned char *key, unsigned char *iv)
                     if (charCount < 4)
                     {
                         charSize[charCount] = tempChar;
-                        fprintf(stdout, "\nSize: %02x", charSize[charCount]);
                     }
                     else if (charCount == 4)
                     {
                         // convert char array to int size
                         memcpy(&size, &charSize, 4);
                         size = htonl(size);
-                        fprintf(stdout, "\nTotal Size: %d", size);
                     }
                     else
                     {
@@ -258,26 +257,23 @@ bool unstego(MagickWand *coverWand, unsigned char *key, unsigned char *iv)
                     tempChar = 0;
                     if (charCount >= (size + 5))
                     {
-                        fprintf(stdout, "\n\nSize: %d\n", size);
                         unsigned char decryptedtext[size];
 
                         fclose(fp);
-                        fp = fopen("temp", "r");
+                        fp = fopen("tempEncriptedFile", "r");
 
                         unsigned char *ciphertext = (unsigned char *)malloc(size);
                         fread(ciphertext, size, 1, fp);
                         fclose(fp);
 
-                        FILE *secretFile = fopen("secret", "w+");
-                        fwrite(ciphertext, 1, size, secretFile);
-                        fclose(secretFile);
-
+                        FILE *secretFile = open_file();
                         int decryptedtext_len = decrypt(ciphertext, size, key, iv, decryptedtext);
-                        secretFile = open_file();
                         fwrite(decryptedtext, 1, decryptedtext_len, secretFile);
-
                         fclose(secretFile);
-                        fprintf(stdout, "\nDone Making Imagee\n");
+
+                        // Remove Temporary Encrypted File
+                        remove("tempEncriptedFile");
+                        fprintf(stdout, "\nDone\n");
                         return true;
                     }
                 }
@@ -313,6 +309,7 @@ bool unstego(MagickWand *coverWand, unsigned char *key, unsigned char *iv)
 void handleErrors(void)
 {
     ERR_print_errors_fp(stderr);
+    fprintf(stdout, "\n\nPassword Not Matching\n");
     abort();
 }
 

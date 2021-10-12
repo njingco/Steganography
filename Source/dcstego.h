@@ -9,7 +9,7 @@
 
 void start_stego(char *coverImage, char *secretImage);
 void start_unstego(char *coverImage);
-void set_key(char *key1);
+void set_key(unsigned char *key);
 void usage();
 
 #endif

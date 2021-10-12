@@ -3,8 +3,11 @@
  * 
  * PROGRAM:		    dcimage
  * 
- * FUNCTIONS:		
- *                  
+ * FUNCTIONS:		bool stego(MagickWand *coverWand, MagickWand *secretWand, unsigned char *key, unsigned char *iv);
+ *                  bool unstego(MagickWand *coverWand, unsigned char *key, unsigned char *iv);
+ *                  void handleErrors(void);
+ *                  int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key, unsigned char *iv, unsigned char *ciphertext);
+ *                  int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key, unsigned char *iv, unsigned char *plaintext);
  * 
  * DATE:			October 4, 2021
  * 
@@ -156,7 +159,7 @@ bool save_img(MagickWand *wand)
         fprintf(stderr, "Error with Saving Image\n");
         return false;
     }
-    fprintf(stdout, "Saved Image\n");
+    fprintf(stdout, "\nSaved Image\n");
     return true;
 }
 

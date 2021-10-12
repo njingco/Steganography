@@ -3,8 +3,10 @@
  * 
  * PROGRAM:		    helper
  * 
- * FUNCTIONS:		
- *                  
+ * FUNCTIONS:		void err_msg(char *msg);
+ *                  bool is_even(int num);
+ *                  FILE *open_file();
+ *                  int write_file(FILE *file, char *buffer, int size); 
  * 
  * DATE:			October 10, 2021
  * 
@@ -68,7 +70,7 @@ bool is_even(int num)
 FILE *open_file()
 {
     char filename[FILE_LEN];
-    fprintf(stdout, "Enter New Image Name: ");
+    fprintf(stdout, "\nEnter New Image Name: ");
     scanf("%s", filename);
 
     FILE *fp = fopen(filename, "w+");

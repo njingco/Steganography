@@ -18,7 +18,7 @@ helper: helper.o
 	$(CC) -o helper helper.o $(MW)
 
 clean:
-	rm -f *.o  dcstego dcutils dcimage helper secret 
+	rm -f *.o  dcstego dcutils dcimage helper 
 
 dcstego.o:
 	$(CC) -c dcstego.c $(MW) $(SSL)

@@ -3,8 +3,10 @@
  * 
  * PROGRAM:		    dcstego
  * 
- * FUNCTIONS:		
- *                  
+ * FUNCTIONS:		void start_stego(char *coverImage, char *secretImage);
+ *                  void start_unstego(char *coverImage);
+ *                  void set_key(unsigned char *key);
+ *                  void usage();
  * 
  * DATE:			October 4, 2021
  * 
@@ -108,11 +110,7 @@ void start_stego(char *coverImage, char *secretImage)
 {
     // Get password from user
     unsigned char *key = (unsigned char *)malloc(KEY_LEN);
-    fprintf(stdout, "Enter key:");
-    // scanf("%hhu", key);
-    // fflush(stdin);
-
-    fgets((char *)key, KEY_LEN, stdin);
+    set_key(key);
 
     // check image type
     MagickWandGenesis();
@@ -184,9 +182,7 @@ void start_unstego(char *coverImage)
 {
     // Get password from user
     unsigned char *key = (unsigned char *)malloc(KEY_LEN);
-    fprintf(stdout, "Enter key:");
-    // scanf("%hhu", key);
-    fgets((char *)key, KEY_LEN, stdin);
+    set_key(key);
 
     // check image type
     MagickWandGenesis();
@@ -231,50 +227,30 @@ void start_unstego(char *coverImage)
  *
  * PROGRAMMER:     Nicole Jingco
  *
- * INTERFACE:      char *key - pointer to key for encryption
+ * INTERFACE:      unsigned char *key - pointer to key for encryption
  *
  * RETURNS:        NA
  *
  * NOTES:
  * This function gets the password key for the encyption process
  * -----------------------------------------------------------------------*/
-void set_key(char *key1)
+void set_key(unsigned char *key)
 {
     struct termios term;
-    int keyMatch = 0;
-    char key2[KEY_LEN];
 
     // Get password
     tcgetattr(fileno(stdin), &term);
-    while (!keyMatch)
-    {
-        // turn off ECHO
-        term.c_lflag &= ~ECHO;
-        tcsetattr(fileno(stdin), 0, &term);
 
-        fprintf(stdout, "Enter key:");
-        fscanf(stdin, "%s", key1);
-        fflush(stdin);
+    // turn off ECHO
+    term.c_lflag &= ~ECHO;
+    tcsetattr(fileno(stdin), 0, &term);
 
-        fprintf(stdout, "\nEnter key again:");
-        fscanf(stdin, "%s", key2);
-        fprintf(stdout, "\n");
-        fflush(stdin);
+    fprintf(stdout, "\nEnter key:");
+    fgets((char *)key, KEY_LEN, stdin);
 
-        // Check if key matches
-        if (strcmp(key1, key2) == 0)
-        {
-            keyMatch = 1;
-        }
-        else
-        {
-            fprintf(stdout, "\nKeys do not match\n");
-        }
-
-        // turn on ECHO
-        term.c_lflag |= ECHO;
-        tcsetattr(fileno(stdin), 0, &term);
-    }
+    // turn on ECHO
+    term.c_lflag |= ECHO;
+    tcsetattr(fileno(stdin), 0, &term);
 }
 
 /*--------------------------------------------------------------------------
