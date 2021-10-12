@@ -32,9 +32,6 @@
  * Unstego
  *  ./dcstego -t unstego -cm test 
  * 
- * TODO:
- * add encryption and decryption
- * fix unstego fize size
  * ---------------------------------------------------------------------------------------*/
 #include "dcstego.h"
 
@@ -120,14 +117,14 @@ void start_stego(char *coverImage, char *secretImage)
     // Check Cover Image
     if (MagickReadImage(cover, coverImage) == MagickFalse)
     {
-        err_msg("Cover Image Wand Error");
+        err_msg("\nCover Image Wand Error");
         break_wands(cover, secret);
         exit(1);
     }
     // Check Secret Image
     if (MagickReadImage(secret, secretImage) == MagickFalse)
     {
-        err_msg("Secret Image Wand Error");
+        err_msg("\nSecret Image Wand Error");
         break_wands(cover, secret);
         exit(1);
     }
@@ -149,7 +146,7 @@ void start_stego(char *coverImage, char *secretImage)
     // Stego images and save new image
     if (!stego(cover, secret, (unsigned char *)key, (unsigned char *)IV))
     {
-        err_msg("Something went wrong with the stego process\n");
+        err_msg("\nSomething went wrong with the stego process\n");
         break_wands(cover, secret);
         exit(1);
     }
@@ -191,7 +188,7 @@ void start_unstego(char *coverImage)
     // Check Cover Image
     if (MagickReadImage(cover, coverImage) == MagickFalse)
     {
-        err_msg("Cover Image Error");
+        err_msg("\nCover Image Error");
         break_wand(cover);
         exit(1);
     }
@@ -205,7 +202,7 @@ void start_unstego(char *coverImage)
     // unstego image and save image
     if (!unstego(cover, (unsigned char *)key, (unsigned char *)IV))
     {
-        err_msg("Something went wrong with the unstegoing process\n");
+        err_msg("\nSomething went wrong with the unstegoing process\n");
         break_wand(cover);
         exit(1);
     }
